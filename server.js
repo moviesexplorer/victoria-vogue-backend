@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 // ===== MONGODB CONNECTION =====
-mongoose.connect('mongodb+srv://abdullah1869:<db_password>@victoria-vouge.kotvzpo.mongodb.net/?appName=Victoria-Vouge')
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log(err));
 
@@ -43,6 +43,30 @@ app.delete('/api/products/:id', async (req, res) => {
     res.json({ message: 'Product deleted' });
 });
 
+// ===== ADMIN ROUTES =====
+app.get('/api/admin/stats', async (req, res) => {
+    try {
+        const productCount = await Product.countDocuments();
+        res.json({
+            products: productCount,
+            orders: 0,
+            users: 0,
+            revenue: 0
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/admin/orders', async (req, res) => {
+    try {
+        res.json([]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ===== SERVER START =====
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
