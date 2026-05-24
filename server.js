@@ -1,67 +1,46 @@
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ===== MONGODB CONNECTION =====
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log('MongoDB connection error:', err));
+// ===== DUMMY DATA (No Database) =====
+let products = [
+    { id: 1, name: 'Radiance Cream', category: 'Skincare', price: 68, images: ['https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=300'] },
+    { id: 2, name: 'Velvet Lipstick', category: 'Makeup', price: 42, images: ['https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300'] }
+];
 
-// ===== PRODUCT SCHEMA =====
-const productSchema = new mongoose.Schema({
-    name: String,
-    category: String,
-    price: Number,
-    originalPrice: Number,
-    stock: Number,
-    description: String,
-    ingredients: String,
-    images: [String]
+// ===== HEALTH CHECK =====
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'OK' });
 });
 
-const Product = mongoose.model('Product', productSchema);
-
-// ===== API ROUTES =====
-app.get('/api/products', async (req, res) => {
-    try {
-        const products = await Product.find();
-        res.json(products);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+// ===== PRODUCTS =====
+app.get('/api/products', (req, res) => {
+    res.json(products);
 });
 
-app.post('/api/products', async (req, res) => {
-    try {
-        const newProduct = new Product(req.body);
-        await newProduct.save();
-        res.status(201).json(newProduct);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+app.post('/api/products', (req, res) => {
+    const newProduct = { id: Date.now(), ...req.body };
+    products.push(newProduct);
+    res.status(201).json(newProduct);
 });
 
-app.delete('/api/products/:id', async (req, res) => {
-    try {
-        await Product.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Product deleted' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+app.delete('/api/products/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    products = products.filter(p => p.id !== id);
+    res.json({ message: 'Product deleted' });
 });
 
-// ===== ADMIN ROUTES (Bypass Database for now) =====
+// ===== ADMIN ROUTES =====
 app.get('/api/admin/stats', (req, res) => {
     res.json({
-        products: 5,
-        orders: 10,
-        users: 20,
-        revenue: 500
+        products: products.length,
+        orders: 0,
+        users: 0,
+        revenue: 0
     });
 });
 
