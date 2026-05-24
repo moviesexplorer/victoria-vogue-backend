@@ -28,22 +28,34 @@ const Product = mongoose.model('Product', productSchema);
 
 // ===== API ROUTES =====
 app.get('/api/products', async (req, res) => {
-    const products = await Product.find();
-    res.json(products);
+    try {
+        const products = await Product.find();
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 app.post('/api/products', async (req, res) => {
-    const newProduct = new Product(req.body);
-    await newProduct.save();
-    res.status(201).json(newProduct);
+    try {
+        const newProduct = new Product(req.body);
+        await newProduct.save();
+        res.status(201).json(newProduct);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 app.delete('/api/products/:id', async (req, res) => {
-    await Product.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Product deleted' });
+    try {
+        await Product.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Product deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// ===== ADMIN ROUTES =====
+// ===== ADMIN ROUTES (Fixed) =====
 app.get('/api/admin/stats', async (req, res) => {
     try {
         const productCount = await Product.countDocuments();
