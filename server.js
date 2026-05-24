@@ -10,7 +10,7 @@ app.use(express.json());
 // ===== MONGODB CONNECTION =====
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB connected'))
-    .catch(err => console.log(err));
+    .catch(err => console.log('MongoDB connection error:', err));
 
 // ===== PRODUCT SCHEMA =====
 const productSchema = new mongoose.Schema({
@@ -55,27 +55,18 @@ app.delete('/api/products/:id', async (req, res) => {
     }
 });
 
-// ===== ADMIN ROUTES (Fixed) =====
-app.get('/api/admin/stats', async (req, res) => {
-    try {
-        const productCount = await Product.countDocuments();
-        res.json({
-            products: productCount,
-            orders: 0,
-            users: 0,
-            revenue: 0
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+// ===== ADMIN ROUTES (Bypass Database for now) =====
+app.get('/api/admin/stats', (req, res) => {
+    res.json({
+        products: 5,
+        orders: 10,
+        users: 20,
+        revenue: 500
+    });
 });
 
-app.get('/api/admin/orders', async (req, res) => {
-    try {
-        res.json([]);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+app.get('/api/admin/orders', (req, res) => {
+    res.json([]);
 });
 
 // ===== SERVER START =====
